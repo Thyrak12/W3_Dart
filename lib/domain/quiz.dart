@@ -2,96 +2,82 @@ import 'package:uuid/uuid.dart';
 
 var uuid = Uuid();
 
-class Question{
+class Question {
   final String id = uuid.v4();
   final String title;
   final List<String> choices;
   final String goodChoice;
   final int maxScore;
 
-  Question({required this.title, required this.choices, required this.goodChoice, required this.maxScore});
+  Question({
+    required this.title,
+    required this.choices,
+    required this.goodChoice,
+    required this.maxScore,
+  });
 }
 
-class Answer{
+class Answer {
   final String id = uuid.v4();
   final Question question;
   final String answerChoice;
-  
 
   Answer({required this.question, required this.answerChoice});
 
-  bool isGood(){
+  bool isGood() {
     return this.answerChoice == question.goodChoice;
   }
 }
 
-class Player{
+class Player {
+  final String id = uuid.v4();
   final String name;
-  int score;
-  Quiz quiz;
 
-  Player(this.name, this.quiz): score = quiz.getScore();
-
-  int getScoreInPercentage(){
-    return (score / quiz.getMaxScore() * 100).toInt();
-  }
+  Player(this.name);
 }
 
-class Quiz{
-  final String id = uuid.v4();
-  List<Question> questions;
-  List <Answer> answers =[];
-  int score = 0;
+class Submission {
+  final id = uuid.v4();
+  final Quiz quiz;
+  final Player player;
+  final List<Answer> answers = [];
 
-  Quiz({required this.questions});
+  Submission({required this.quiz, required this.player});
 
-  void addAnswer(Answer asnwer) {
-     this.answers.add(asnwer);
+  void addAnswer(Answer answer) {
+    answers.add(answer);
   }
 
-  int getMaxScore(){
-    int sum = 0;
-    for (Question q in questions){
-      sum += q.maxScore;
-    }
-
-    return sum;
-  }
-
-  int getScore(){
-    for(Answer answer in answers){
-      if (answer.isGood()) {
-        score += answer.question.maxScore;
-      }
+  int getScore() {
+    int score = 0;
+    for (var ans in answers) {
+      if (ans.isGood()) score += ans.question.maxScore;
     }
     return score;
   }
 
-  int getScoreInPercentage(){
-    return ((score/ getMaxScore())*100).toInt();
+  int getScoreInPercent() {
+    if (quiz.getMaxScore() == 0) return 0;
+    return ((getScore() / quiz.getMaxScore()) * 100).toInt();
   }
+}
 
-  void reset(){
-    this.score = 0;
-    this.answers = [];
-  }
 
-  Question? getQuestionById(int id){
-    for(Question q in questions){
-      if (q.id == id){
-        return q;
-      }
+class Quiz {
+  final String id = uuid.v4();
+  final List<Question> questions;
+
+  Quiz({required this.questions});
+
+  int getMaxScore() {
+    int total = 0;
+    for (var q in questions) {
+      total += q.maxScore;
     }
-    return null;
+    return total;
   }
 
-  Answer? getAnswerById(int id){
-    for(Answer a in answers){
-      if (a.id == id){
-        return a;
-      }
-    }
-    return null;
+    Submission startSubmission(Player player) {
+    return Submission(quiz: this, player: player);
   }
-
 }
